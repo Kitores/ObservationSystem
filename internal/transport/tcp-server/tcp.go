@@ -1,13 +1,14 @@
 package tcp_server
 
 import (
+	"ObservationSystem/internal/storage/postgre/methods"
 	"bufio"
 	"fmt"
 	"log"
 	"net"
 )
 
-func StartTCPlogConsumer(network, address string) (conn net.Conn) {
+func StartTCPlogConsumer(network, address string, storage *methods.PostgreSqlx) (conn net.Conn) {
 
 	//conn, err := net.Dial(network, address)
 
@@ -26,22 +27,31 @@ func StartTCPlogConsumer(network, address string) (conn net.Conn) {
 		}
 
 		// Обработка соединения в отдельной горутине
-		go handleConnections(conn)
+		go handleConnections(conn, storage)
 	}
 	return conn
 }
 
-func handleConnections(conn net.Conn) {
+func handleConnections(conn net.Conn, pg *methods.PostgreSqlx) {
 	defer conn.Close()
 
 	reader := bufio.NewReader(conn)
 	log.Printf("Клиент Подключился: %s\n", conn.RemoteAddr())
+
+	var resp []byte
+	conn.Read(resp) // Тут приходит данные для инициализации сервиса, а именно serviceName, host, team_owner, desc
+	fmt.Println(string(resp))
+	pg.RegisterService() // И их нужно как-то распарсить из строки и передать в этот метод для записи нового сервиса в бд
+
 	for {
 		message, err := reader.ReadString('\n')
 		if err != nil {
 			log.Printf("Клиент отключился: %s\n", conn.RemoteAddr())
 			return
 		}
+
+		// Тут планируется парсинг из message лога, заполнения структуры LogEntity и сохранение новой записи в таблице
+		pg.SaveLog(message)
 
 		log.Printf("Получено от %s: %s\n", conn.RemoteAddr(), message)
 
