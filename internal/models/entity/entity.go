@@ -15,7 +15,7 @@ type Service struct {
 }
 
 type Host struct {
-	ID   int64   `db:"id" json:"id"`
+	ID   int64   `db:"id" json:"id,omitempty"`
 	Name string  `db:"name" json:"name"`
 	IP   *string `db:"ip" json:"ip,omitempty"` // nullable
 	//Region    *string   `db:"region" json:"region,omitempty"`
@@ -25,13 +25,13 @@ type Host struct {
 }
 
 type Environment struct {
-	ID   int64   `db:"id" json:"id"`
+	ID   int64   `db:"id" json:"id,omitempty"`
 	Name string  `db:"name" json:"name"`
 	Desc *string `db:"desc" json:"description,omitempty"` // nullable
 }
 
 type LogLevel struct {
-	ID            int64   `db:"id" json:"id"`
+	ID            int64   `db:"id" json:"id,omitempty"`
 	Name          string  `db:"name" json:"name"`
 	Severity      int     `db:"severity" json:"severity"`
 	ColorCode     *string `db:"color_code" json:"color_code,omitempty"`
@@ -40,7 +40,7 @@ type LogLevel struct {
 }
 
 type LogEntity struct {
-	ID            int64 `db:"id" json:"id"`
+	ID            int64 `db:"id" json:"id,omitempty"`
 	ServiceID     int64 `db:"service_id" json:"service_id"`
 	EnvironmentID int64 `db:"environment_id" json:"environment_id"`
 	HostID        int64 `db:"host_id" json:"host_id"`
@@ -54,10 +54,10 @@ type LogEntity struct {
 	Version    int       `db:"version" json:"version"`
 
 	// Для JOIN запросов (опционально, не маппятся напрямую из БД)
-	ServiceName     *string `db:"-" json:"service_name,omitempty"`
-	EnvironmentName *string `db:"-" json:"environment_name,omitempty"`
-	HostName        *string `db:"-" json:"host_name,omitempty"`
-	LevelName       *string `db:"-" json:"level_name,omitempty"`
+	//ServiceName     *string `db:"-" json:"service_name,omitempty"`
+	//EnvironmentName *string `db:"-" json:"environment_name,omitempty"`
+	//HostName        *string `db:"-" json:"host_name,omitempty"`
+	//LevelName       *string `db:"-" json:"level_name,omitempty"`
 }
 
 //type LogException struct {

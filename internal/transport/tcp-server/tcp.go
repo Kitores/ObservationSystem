@@ -1,10 +1,13 @@
 package tcp_server
 
 import (
+	"ObservationSystem/internal/models/entity"
 	"ObservationSystem/internal/storage/postgre/methods"
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net"
 )
 
@@ -40,8 +43,16 @@ func handleConnections(conn net.Conn, pg *methods.PostgreSqlx) {
 
 	var resp []byte
 	conn.Read(resp) // Тут приходит данные для инициализации сервиса, а именно serviceName, host, team_owner, desc
+
+	var newService entity.Service
+	json.Unmarshal(resp, &newService)
+
 	fmt.Println(string(resp))
-	pg.RegisterService() // И их нужно как-то распарсить из строки и передать в этот метод для записи нового сервиса в бд
+	_, err := pg.RegisterService(newService) // И их нужно как-то распарсить из строки и передать в этот метод для записи нового сервиса в бд
+
+	if err != nil {
+		log.Println(err)
+	}
 
 	for {
 		message, err := reader.ReadString('\n')
@@ -50,6 +61,7 @@ func handleConnections(conn net.Conn, pg *methods.PostgreSqlx) {
 			return
 		}
 
+		slog.Handler()
 		// Тут планируется парсинг из message лога, заполнения структуры LogEntity и сохранение новой записи в таблице
 		pg.SaveLog(message)
 

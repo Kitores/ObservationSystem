@@ -58,7 +58,7 @@ func (pg *PostgreSqlx) SaveLog(logEntity entity.LogEntity) (sql.Result, error) {
 	return result, nil
 }
 
-func (pg *PostgreSqlx) RegisterService(serviceName, teamOwner, description string) (int64, error) {
+func (pg *PostgreSqlx) RegisterService(newService entity.Service) (int64, error) {
 	query := `
         INSERT INTO services (name, team_owner, desc, is_active)
         VALUES ($1, $2, $3, true)
@@ -75,7 +75,7 @@ func (pg *PostgreSqlx) RegisterService(serviceName, teamOwner, description strin
     `
 
 	var id int64
-	err := pg.db.Get(&id, query, serviceName, teamOwner, description)
+	err := pg.db.Get(&id, query, newService.Name, newService.TeamOwner, newService.Desc)
 	if err != nil {
 		return 0, fmt.Errorf("unable to save new service: %w", err)
 	}
