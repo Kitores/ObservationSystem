@@ -1,6 +1,6 @@
-module ObservationSystem
+module github.com/Kitores/ObservationSystem
 
-go 1.24.7
+go 1.25.5
 
 require (
 	github.com/jackc/pgx/v5 v5.7.6

@@ -1,11 +1,11 @@
 package app
 
 import (
-	"ObservationSystem/internal/logs"
-	"ObservationSystem/internal/storage/postgre/methods"
-	"ObservationSystem/internal/transport/rest/handlers/userHandlers"
-	tcp_server "ObservationSystem/internal/transport/tcp-server"
 	"fmt"
+	"github.com/Kitores/ObservationSystem/internal/logs"
+	"github.com/Kitores/ObservationSystem/internal/storage/postgre/methods"
+	"github.com/Kitores/ObservationSystem/internal/transport/rest/handlers/userHandlers"
+	tcp_server "github.com/Kitores/ObservationSystem/internal/transport/tcp-server"
 	"net/http"
 	"sync"
 )
