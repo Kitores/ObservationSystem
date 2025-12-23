@@ -1,6 +1,6 @@
 package main
 
-import "ObservationSystem/internal/app"
+import "github.com/Kitores/ObservationSystem/internal/app"
 
 func main() {
 	app.Run()

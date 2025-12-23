@@ -49,7 +49,7 @@ func handleConnections(conn net.Conn, pg *methods.PostgreSqlx) {
 	_, err := pg.RegisterService(newService)
 
 	if err != nil {
-		log.Println(err)
+		log.Println(err, "test")
 	}
 	var msg []byte
 	for {
@@ -61,15 +61,16 @@ func handleConnections(conn net.Conn, pg *methods.PostgreSqlx) {
 		var logEntry entity.LogEntity
 		err = json.Unmarshal(msg, &logEntry)
 		if err != nil {
-			log.Println(err)
+			log.Println(err, "test2")
+			panic(err)
 		}
 		// Тут планируется парсинг из message лога, заполнения структуры LogEntity и сохранение новой записи в таблице
 
 		pg.SaveLog(logEntry)
 
-		log.Printf("Получено от %s: %s\n", conn.RemoteAddr(), message)
+		//log.Printf("Получено от %s: %s\n", conn.RemoteAddr(), message)
 
-		response := fmt.Sprintf("%s", message)
+		response := fmt.Sprintf("%s", msg)
 		_, err = conn.Write([]byte(response))
 		if err != nil {
 			log.Println("Ошибка отправки:", err)
