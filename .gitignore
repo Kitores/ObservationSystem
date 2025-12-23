@@ -1,5 +1,5 @@
 .idea
 configs
-.env
+*.env
 internal/storage/postgre/schema.sql
 *.sql

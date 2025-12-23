@@ -13,7 +13,7 @@ type JSONLogger struct {
 	writer      io.Writer
 	serviceID   int64
 	environment int64
-	hostID      int64
+	hostIP      string
 }
 
 type LogEntry struct {
@@ -22,19 +22,19 @@ type LogEntry struct {
 	Message       string                 `json:"message"`
 	ServiceID     int64                  `json:"service_id,omitempty"`
 	EnvironmentID int64                  `json:"environment_id,omitempty"`
-	HostID        int64                  `json:"host_id,omitempty"`
+	HostIP        string                 `json:"host_ip,omitempty"`
 	LevelID       int64                  `json:"level_id,omitempty"`
 	LoggerName    string                 `json:"logger_name,omitempty"`
 	Fields        map[string]interface{} `json:"fields,omitempty"`
 	Error         string                 `json:"error,omitempty"`
 }
 
-func NewJSONLogger(writer io.Writer, serviceID, hostID, environment int64) *JSONLogger {
+func NewJSONLogger(writer io.Writer, serviceID, environment int64, hostIP string) *JSONLogger {
 	return &JSONLogger{
 		writer:      writer,
 		serviceID:   serviceID,
 		environment: environment,
-		hostID:      hostID,
+		hostIP:      hostIP,
 	}
 }
 
@@ -65,7 +65,7 @@ func (l *JSONLogger) log(level string, levelID int64, msg string, err error, fie
 		Message:       msg,
 		ServiceID:     l.serviceID,
 		EnvironmentID: l.environment,
-		HostID:        l.hostID,
+		HostIP:        l.hostIP,
 		LevelID:       levelID,
 		LoggerName:    "app-logger",
 	}
