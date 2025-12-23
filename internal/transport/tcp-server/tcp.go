@@ -1,11 +1,11 @@
 package tcp_server
 
 import (
-	"ObservationSystem/internal/models/entity"
-	"ObservationSystem/internal/storage/postgre/methods"
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/Kitores/ObservationSystem/internal/models/entity"
+	"github.com/Kitores/ObservationSystem/internal/storage/postgre/methods"
 	"log"
 	"log/slog"
 	"net"

@@ -14,7 +14,7 @@ type TCPJSONLogger struct {
 	address       string
 	serviceID     int64
 	environmentID int64
-	hostID        int64
+	hostIP        string
 	reconnect     bool
 	buffer        chan []byte
 }
@@ -26,19 +26,19 @@ type TCPLogEntry struct {
 	Message       string                 `json:"message"`
 	ServiceID     int64                  `json:"service_id"`
 	EnvironmentID int64                  `json:"environment_id"`
-	HostID        int64                  `json:"host_id"`
+	HostIP        string                 `json:"host_ip"`
 	LoggerName    string                 `json:"logger_name,omitempty"`
 	Metadata      map[string]interface{} `json:"metadata,omitempty"`
 	TraceID       string                 `json:"trace_id,omitempty"`
 	SpanID        string                 `json:"span_id,omitempty"`
 }
 
-func NewTCPJSONLogger(address string, serviceID, environmentID, hostID int64, bufferSize int) (*TCPJSONLogger, error) {
+func NewTCPJSONLogger(address string, serviceID, environmentID int64, hostIP string, bufferSize int) (*TCPJSONLogger, error) {
 	logger := &TCPJSONLogger{
 		address:       address,
 		serviceID:     serviceID,
 		environmentID: environmentID,
-		hostID:        hostID,
+		hostIP:        hostIP,
 		reconnect:     true,
 		buffer:        make(chan []byte, bufferSize),
 	}
@@ -130,7 +130,7 @@ func (l *TCPJSONLogger) log(level string, levelID int64, msg string, metadata ..
 		Message:       msg,
 		ServiceID:     l.serviceID,
 		EnvironmentID: l.environmentID,
-		HostID:        l.hostID,
+		HostIP:        l.hostIP,
 		LoggerName:    "tcp-json-logger",
 	}
 
