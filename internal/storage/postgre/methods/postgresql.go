@@ -57,29 +57,30 @@ func (pg *PostgreSqlx) SaveLog(logEntity entity.LogEntity) (sql.Result, error) {
 	return result, nil
 }
 
-func (pg *PostgreSqlx) RegisterService(newService entity.Service) (int64, error) {
+func (pg *PostgreSqlx) RegisterService(newService entity.Service) (int64, int64, error) {
 	query := `
-        INSERT INTO services (name, host_ip, team_owner, desc, is_active)
-        VALUES ($1, $2, $3, $4, true)
-        ON CONFLICT (name) 
-        DO UPDATE SET 
-            host_ip = EXCLUDED.host_ip,
-            team_owner = EXCLUDED.team_owner,
-            desc = EXCLUDED.desc,
-            is_active = true,
-            creation_at = CASE 
-                WHEN services.creation_at IS NULL THEN NOW()
-                ELSE services.creation_at 
-            END
-        RETURNING id
+        SELECT service_id, host_id 
+        FROM register_service($1, $2, $3, $4, $5)
     `
 
-	var id int64
-	err := pg.db.Get(&id, query, newService.Name, newService.HostIp, newService.TeamOwner, newService.Desc)
-	if err != nil {
-		return 0, fmt.Errorf("unable to save new service: %w", err)
+	var result struct {
+		ServiceID int64 `db:"service_id"`
+		HostID    int64 `db:"host_id"`
 	}
-	return id, err
+
+	err := pg.db.Get(&result, query,
+		newService.Name,
+		newService.HostName,
+		newService.HostIP,
+		*newService.TeamOwner,
+		*newService.Desc, // description
+	)
+
+	if err != nil {
+		return 0, 0, fmt.Errorf("unable to register service: %w", err)
+	}
+
+	return result.ServiceID, result.HostID, nil
 }
 
 func (pg *PostgreSqlx) UpdateServiceStatus(serviceNameOrHostID interface{}, newStatus bool) error {

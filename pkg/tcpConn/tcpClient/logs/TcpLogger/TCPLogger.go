@@ -35,6 +35,23 @@ func NewTCPJSONLogger(address string, serviceID, environmentID int64, hostIP str
 		return nil, err
 	}
 
+	teamowner := "TestTeam"
+	description := "Service for manage rabbitmq"
+	service := entity.Service{
+		Name:      "message-broker",
+		HostIP:    "localhost",
+		TeamOwner: &teamowner,
+		Desc:      &description,
+		IsFirst:   true,
+	}
+
+	jsonService, err := json.Marshal(service)
+	if err != nil {
+		return nil, err
+	}
+	//jsonService = append(jsonService, '#')
+	logger.send(jsonService)
+
 	// Запускаем worker для отправки
 	go logger.worker()
 

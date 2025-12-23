@@ -6,13 +6,17 @@ import (
 )
 
 type Service struct {
-	ID        int64     `db:"id" json:"id"`
+	ID        int64     `db:"id" json:"id,omitempty"`
 	Name      string    `db:"name" json:"name"`
-	HostIp    string    `db:"host_ip" json:"host_ip"`
+	HostName  string    `db:"host_name" json:"host_name"`
+	HostID    int64     `db:"host_id" json:"host_id,omitempty"`
+	HostIP    string    `db:"host_ip" json:"host_ip"`
 	Desc      *string   `db:"desc" json:"description,omitempty"` // nullable
 	TeamOwner *string   `db:"team_owner" json:"team_owner,omitempty"`
 	CreatedAt time.Time `db:"creation_at" json:"created_at"`
 	IsActive  bool      `db:"is_active" json:"is_active"`
+
+	IsFirst bool `json:"is_first"`
 }
 
 type Host struct {
@@ -21,7 +25,7 @@ type Host struct {
 	IP   *string `db:"ip" json:"ip,omitempty"` // nullable
 	//Region    *string   `db:"region" json:"region,omitempty"`
 	//Zone      *string   `db:"zone" json:"zone,omitempty"`
-	Metadata  *string   `db:"meta_data" json:"metadata,omitempty"` // db: meta_data, json: metadata
+	//Metadata  *string   `db:"meta_data" json:"metadata,omitempty"` // db: meta_data, json: metadata
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 

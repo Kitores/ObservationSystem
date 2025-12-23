@@ -1,25 +1,25 @@
--- Таблица сервисов (соответствует entity.Services)
-CREATE TABLE IF NOT EXISTS services (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE,
-    host_ip VARCHAR(50) NOT NULL REFERENCES hosts(ip) ON DELETE CASCADE
-    description TEXT,
-    team_owner VARCHAR(100),
-    creation_at TIMESTAMPTZ DEFAULT NOW(),
-    is_active BOOLEAN DEFAULT TRUE
-);
-
 -- Таблица хостов (соответствует entity.Hosts)
 CREATE TABLE IF NOT EXISTS hosts (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    ip VARCHAR(50),
+    ip VARCHAR(50) UNIQUE,
 --     region VARCHAR(100),
 --     zone VARCHAR(100),
-    meta_data TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(name, ip)
 );
+
+-- Таблица сервисов (соответствует entity.Services)
+CREATE TABLE IF NOT EXISTS services (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    host_id INTEGER NOT NULL REFERENCES hosts(id) ON DELETE CASCADE,
+    description TEXT,
+    team_owner VARCHAR(100),
+    creation_at TIMESTAMPTZ DEFAULT NOW(),
+    is_active BOOLEAN DEFAULT TRUE
+    );
+
 
 -- Таблица окружений (соответствует entity.Environments)
 CREATE TABLE IF NOT EXISTS environments (
@@ -88,10 +88,49 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Вставка начальных данных для окружений
 INSERT INTO environments (name, description) VALUES
-    ('local', 'Local environment')
+    ('local', 'Local environment'),
     ('production', 'Production environment'),
     ('staging', 'Staging environment'),
     ('development', 'Development environment')
 ON CONFLICT (name) DO NOTHING;
 
 
+
+-- Минималистичная версия функции регистрации
+CREATE OR REPLACE FUNCTION register_service_simple(
+    p_service_name VARCHAR(100),
+    p_host_name VARCHAR(255),
+    p_host_ip VARCHAR(50),
+    p_team_owner VARCHAR(100),
+    p_description TEXT DEFAULT NULL
+) RETURNS TABLE(service_id INTEGER, host_id INTEGER) AS $$
+    -- Вставка хоста (без обработки NULL - будет ошибка если что-то пошло не так)
+    WITH host_insert AS (
+        INSERT INTO hosts (name, ip, created_at)
+        VALUES (p_host_name, p_host_ip, NOW())
+        ON CONFLICT (name, ip)
+        DO NOTHING
+        RETURNING id
+    ),
+    -- Получаем ID хоста (нового или существующего)
+    host_id AS (
+        SELECT id FROM host_insert
+        UNION ALL
+        SELECT id FROM hosts WHERE name = p_host_name AND ip = p_host_ip
+        LIMIT 1
+    ),
+    -- Вставляем сервис
+    service_insert AS (
+        INSERT INTO services (name, host_id, team_owner, description, is_active, creation_at)
+        SELECT p_service_name, id, p_team_owner, p_description, TRUE, NOW()
+        FROM host_id
+        ON CONFLICT (name)
+        DO UPDATE SET
+            host_id = EXCLUDED.host_id,
+            team_owner = EXCLUDED.team_owner,
+            description = EXCLUDED.description,
+            is_active = TRUE
+        RETURNING id, host_id
+    )
+SELECT id as service_id, host_id FROM service_insert;
+$$ LANGUAGE sql;
