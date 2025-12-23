@@ -62,7 +62,6 @@ func (l *JSONLogger) log(levelID int64, msg string, err error, metadata ...map[s
 		entry.Error = err.Error()
 	}
 
-	// Добавляем дополнительные поля
 	if len(metadata) > 0 {
 		entry.Metadata = metadata[0]
 	}
@@ -74,7 +73,6 @@ func (l *JSONLogger) log(levelID int64, msg string, err error, metadata ...map[s
 		return
 	}
 
-	// Добавляем новую строку для удобства чтения
 	data = append(data, '\n')
 
 	// Записываем
