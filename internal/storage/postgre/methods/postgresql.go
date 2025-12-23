@@ -1,14 +1,13 @@
 package methods
 
 import (
-	"ObservationSystem/internal/models/entity"
 	"database/sql"
 	"fmt"
+	"github.com/Kitores/ObservationSystem/internal/models/entity"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 	"log"
 	"sync"
-	"time"
 )
 
 type PostgreSqlx struct {
@@ -40,17 +39,17 @@ func (pg *PostgreSqlx) Close()      {}
 
 // Для TCP сервера
 func (pg *PostgreSqlx) SaveLog(logEntity entity.LogEntity) (sql.Result, error) {
-	query := `INSERT INTO logs (service_id, environment_id, host_id, level_id, 
-             message, timestamp, logger_name, recived_at) VALUES (:service_id, :environment_id, :host_id, :level_id, :message, :timestamp, :logger_name, :recived_at)`
+	query := `INSERT INTO logs (service_id, environment_id, host_ip, level_id, 
+             message, timestamp, logger_name, recived_at) VALUES (:service_id, :environment_id, :host_ip, :level_id, :message, :timestamp, :logger_name, :recived_at)`
 	result, err := pg.db.NamedExec(query, map[string]interface{}{
 		"service_id":     logEntity.ServiceID,
 		"environment_id": logEntity.EnvironmentID,
-		"host_id":        logEntity.HostID,
+		"host_ip":        logEntity.HostIP,
 		"level_id":       logEntity.LevelID,
 		"message":        logEntity.Message,
 		"timestamp":      logEntity.Timestamp,
 		"logger_name":    logEntity.LoggerName,
-		"received_at":    time.Now(), // Потом можно будет именно время получения по TCP указывать, а не фактическое время сохранения в базу данных
+		"received_at":    logEntity.ReceivedAt, //Done! -> Потом можно будет именно время получения по TCP указывать, а не фактическое время сохранения в базу данных
 	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to save log: %w", err)
@@ -60,10 +59,11 @@ func (pg *PostgreSqlx) SaveLog(logEntity entity.LogEntity) (sql.Result, error) {
 
 func (pg *PostgreSqlx) RegisterService(newService entity.Service) (int64, error) {
 	query := `
-        INSERT INTO services (name, team_owner, desc, is_active)
-        VALUES ($1, $2, $3, true)
+        INSERT INTO services (name, host_ip, team_owner, desc, is_active)
+        VALUES ($1, $2, $3, $4, true)
         ON CONFLICT (name) 
         DO UPDATE SET 
+            host_ip = EXCLUDED.host_ip,
             team_owner = EXCLUDED.team_owner,
             desc = EXCLUDED.desc,
             is_active = true,
@@ -75,7 +75,7 @@ func (pg *PostgreSqlx) RegisterService(newService entity.Service) (int64, error)
     `
 
 	var id int64
-	err := pg.db.Get(&id, query, newService.Name, newService.TeamOwner, newService.Desc)
+	err := pg.db.Get(&id, query, newService.Name, newService.HostIp, newService.TeamOwner, newService.Desc)
 	if err != nil {
 		return 0, fmt.Errorf("unable to save new service: %w", err)
 	}

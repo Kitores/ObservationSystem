@@ -3,6 +3,7 @@ package CustomLogger
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Kitores/ObservationSystem/internal/models/entity"
 	"io"
 	"log"
 	"os"
@@ -16,19 +17,6 @@ type JSONLogger struct {
 	hostIP      string
 }
 
-type LogEntry struct {
-	Timestamp     time.Time              `json:"timestamp"`
-	Level         string                 `json:"level"`
-	Message       string                 `json:"message"`
-	ServiceID     int64                  `json:"service_id,omitempty"`
-	EnvironmentID int64                  `json:"environment_id,omitempty"`
-	HostIP        string                 `json:"host_ip,omitempty"`
-	LevelID       int64                  `json:"level_id,omitempty"`
-	LoggerName    string                 `json:"logger_name,omitempty"`
-	Fields        map[string]interface{} `json:"fields,omitempty"`
-	Error         string                 `json:"error,omitempty"`
-}
-
 func NewJSONLogger(writer io.Writer, serviceID, environment int64, hostIP string) *JSONLogger {
 	return &JSONLogger{
 		writer:      writer,
@@ -40,34 +28,34 @@ func NewJSONLogger(writer io.Writer, serviceID, environment int64, hostIP string
 
 // Info логирование
 func (l *JSONLogger) Info(msg string, fields ...map[string]interface{}) {
-	l.log("INFO", 1, msg, nil, fields...)
+	l.log(1, msg, nil, fields...)
 }
 
 // Error логирование
 func (l *JSONLogger) Error(msg string, err error, fields ...map[string]interface{}) {
-	l.log("ERROR", 2, msg, err, fields...)
+	l.log(2, msg, err, fields...)
 }
 
 // Debug логирование
 func (l *JSONLogger) Debug(msg string, fields ...map[string]interface{}) {
-	l.log("DEBUG", 3, msg, nil, fields...)
+	l.log(3, msg, nil, fields...)
 }
 
 // Warn логирование
 func (l *JSONLogger) Warn(msg string, fields ...map[string]interface{}) {
-	l.log("WARN", 4, msg, nil, fields...)
+	l.log(4, msg, nil, fields...)
 }
 
-func (l *JSONLogger) log(level string, levelID int64, msg string, err error, fields ...map[string]interface{}) {
-	entry := LogEntry{
+func (l *JSONLogger) log(levelID int64, msg string, err error, metadata ...map[string]interface{}) {
+	loggerName := "app-logger"
+	entry := entity.LogEntity{
 		Timestamp:     time.Now().UTC(),
-		Level:         level,
 		Message:       msg,
 		ServiceID:     l.serviceID,
 		EnvironmentID: l.environment,
 		HostIP:        l.hostIP,
 		LevelID:       levelID,
-		LoggerName:    "app-logger",
+		LoggerName:    &loggerName,
 	}
 
 	if err != nil {
@@ -75,8 +63,8 @@ func (l *JSONLogger) log(level string, levelID int64, msg string, err error, fie
 	}
 
 	// Добавляем дополнительные поля
-	if len(fields) > 0 {
-		entry.Fields = fields[0]
+	if len(metadata) > 0 {
+		entry.Metadata = metadata[0]
 	}
 
 	// Сериализуем в JSON

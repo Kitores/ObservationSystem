@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS services (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
+    host_ip VARCHAR(50) NOT NULL REFERENCES hosts(ip) ON DELETE CASCADE
     description TEXT,
     team_owner VARCHAR(100),
     creation_at TIMESTAMPTZ DEFAULT NOW(),
@@ -87,6 +88,7 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Вставка начальных данных для окружений
 INSERT INTO environments (name, description) VALUES
+    ('local', 'Local environment')
     ('production', 'Production environment'),
     ('staging', 'Staging environment'),
     ('development', 'Development environment')

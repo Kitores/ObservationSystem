@@ -7,7 +7,6 @@ import (
 	"github.com/Kitores/ObservationSystem/internal/models/entity"
 	"github.com/Kitores/ObservationSystem/internal/storage/postgre/methods"
 	"log"
-	"log/slog"
 	"net"
 )
 
@@ -45,25 +44,28 @@ func handleConnections(conn net.Conn, pg *methods.PostgreSqlx) {
 	conn.Read(resp) // Тут приходит данные для инициализации сервиса, а именно serviceName, host, team_owner, desc
 
 	var newService entity.Service
-	json.Unmarshal(resp, &newService)
+	json.Unmarshal(resp, &newService) // DONE! -> И их нужно как-то распарсить из строки и передать в этот метод для записи нового сервиса в бд
 
-	fmt.Println(string(resp))
-	_, err := pg.RegisterService(newService) // И их нужно как-то распарсить из строки и передать в этот метод для записи нового сервиса в бд
+	_, err := pg.RegisterService(newService)
 
 	if err != nil {
 		log.Println(err)
 	}
-
+	var msg []byte
 	for {
-		message, err := reader.ReadString('\n')
+		_, err := reader.Read(msg)
 		if err != nil {
 			log.Printf("Клиент отключился: %s\n", conn.RemoteAddr())
 			return
 		}
-
-		slog.Handler()
+		var logEntry entity.LogEntity
+		err = json.Unmarshal(msg, &logEntry)
+		if err != nil {
+			log.Println(err)
+		}
 		// Тут планируется парсинг из message лога, заполнения структуры LogEntity и сохранение новой записи в таблице
-		pg.SaveLog(message)
+
+		pg.SaveLog(logEntry)
 
 		log.Printf("Получено от %s: %s\n", conn.RemoteAddr(), message)
 

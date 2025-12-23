@@ -8,6 +8,7 @@ import (
 type Service struct {
 	ID        int64     `db:"id" json:"id"`
 	Name      string    `db:"name" json:"name"`
+	HostIp    string    `db:"host_ip" json:"host_ip"`
 	Desc      *string   `db:"desc" json:"description,omitempty"` // nullable
 	TeamOwner *string   `db:"team_owner" json:"team_owner,omitempty"`
 	CreatedAt time.Time `db:"creation_at" json:"created_at"`
@@ -40,18 +41,21 @@ type LogLevel struct {
 }
 
 type LogEntity struct {
-	ID            int64 `db:"id" json:"id,omitempty"`
-	ServiceID     int64 `db:"service_id" json:"service_id"`
-	EnvironmentID int64 `db:"environment_id" json:"environment_id"`
-	HostID        int64 `db:"host_id" json:"host_id"`
-	LevelID       int64 `db:"level_id" json:"level_id"`
+	ID            int64  `db:"id" json:"id,omitempty"`
+	ServiceID     int64  `db:"service_id" json:"service_id"`
+	EnvironmentID int64  `db:"environment_id" json:"environment_id"`
+	HostIP        string `db:"host_ip" json:"host_ip"`
+	LevelID       int64  `db:"level_id" json:"level_id"`
 
 	Message    string    `db:"message" json:"message"`
 	Timestamp  time.Time `db:"timestamp" json:"timestamp"`
 	LoggerName *string   `db:"logger_name" json:"logger_name,omitempty"` // nullable
 
-	ReceivedAt time.Time `db:"received_at" json:"received_at"`
-	Version    int       `db:"version" json:"version"`
+	ReceivedAt time.Time `db:"received_at" json:"received_at,omitempty"`
+	Version    int       `db:"version" json:"version,omitempty"`
+
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+	Error    string                 `json:"error,omitempty"`
 
 	// Для JOIN запросов (опционально, не маппятся напрямую из БД)
 	//ServiceName     *string `db:"-" json:"service_name,omitempty"`
