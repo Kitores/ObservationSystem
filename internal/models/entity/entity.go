@@ -48,8 +48,14 @@ type LogEntity struct {
 	ID            int64  `db:"id" json:"id,omitempty"`
 	ServiceID     int64  `db:"service_id" json:"service_id"`
 	EnvironmentID int64  `db:"environment_id" json:"environment_id"`
-	HostIP        string `db:"host_ip" json:"host_ip"`
-	LevelID       int64  `db:"level_id" json:"level_id"`
+	HostID        int64  `db:"host_id" json:"host_id"`
+	HostIP        string `db:"host_ip" json:"host_ip"` // Only for json
+
+	EnvName       string `db:"environment_name" json:"env_name"`
+	LevelName     string `db:"level_name" json:"level_name"`
+	LevelSeverity int    `db:"level_severity" json:"level_severity"`
+
+	LevelID int64 `db:"level_id" json:"level_id"`
 
 	Message    string    `db:"message" json:"message"`
 	Timestamp  time.Time `db:"timestamp" json:"timestamp"`
@@ -108,9 +114,10 @@ type LogWithDetails struct {
 }
 
 type HostErrorStats struct {
-	HostID     int64        `db:"host_id" json:"host_id"`
-	HostName   string       `db:"host_name" json:"host_name"`
-	ErrorCount int          `db:"error_count" json:"error_count"`
-	FatalCount int          `db:"fatal_count" json:"fatal_count"`
-	LastError  sql.NullTime `db:"last_error" json:"last_error,omitempty"`
+	HostID     int64     `db:"host_id" json:"host_id"`
+	HostName   string    `db:"host_name" json:"host_name"`
+	ErrorCount int       `db:"error_count" json:"error_count"`
+	DebugCount int       `db:"debug_count" json:"debug_count"`
+	FatalCount int       `db:"fatal_count" json:"fatal_count"`
+	LastError  time.Time `db:"last_error" json:"last_error"`
 }

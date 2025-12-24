@@ -97,7 +97,7 @@ ON CONFLICT (name) DO NOTHING;
 
 
 -- Минималистичная версия функции регистрации
-CREATE OR REPLACE FUNCTION register_service_simple(
+CREATE OR REPLACE FUNCTION register_service(
     p_service_name VARCHAR(100),
     p_host_name VARCHAR(255),
     p_host_ip VARCHAR(50),

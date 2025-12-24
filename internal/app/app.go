@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/Kitores/ObservationSystem/internal/logs"
 	"github.com/Kitores/ObservationSystem/internal/storage/postgre/methods"
-	"github.com/Kitores/ObservationSystem/internal/transport/rest/handlers/userHandlers"
+	http_server "github.com/Kitores/ObservationSystem/internal/transport/http-server"
 	tcp_server "github.com/Kitores/ObservationSystem/internal/transport/tcp-server"
 	"net/http"
 	"sync"
@@ -28,7 +28,7 @@ func Run() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		http.HandleFunc("/", userHandlers.UserHandler)
+		http_server.StartHttpServer(storage)
 
 		logger.Info("HTTP Server starting on :8080")
 		if err := http.ListenAndServe(":8080", nil); err != nil {

@@ -42,7 +42,7 @@ func handleConnections(conn net.Conn, pg *methods.PostgreSqlx) {
 	reader := bufio.NewReader(conn)
 	log.Printf("Клиент Подключился: %s\n", conn.RemoteAddr())
 
-	waitingNewService(conn, pg)
+	serviceID, hostID := waitingNewService(conn, pg)
 
 	for {
 		msg, err := reader.ReadBytes('\n')
@@ -60,11 +60,17 @@ func handleConnections(conn net.Conn, pg *methods.PostgreSqlx) {
 		var logEntity entity.LogEntity
 		json.Unmarshal(msg, &logEntity)
 		logEntity.ReceivedAt = time.Now().UTC()
+		logEntity.HostID = hostID
+		logEntity.ServiceID = serviceID
+
 		fmt.Println(logEntity)
 
 		// Тут планируется парсинг из message лога, заполнения структуры LogEntity и сохранение новой записи в таблице
 
-		//pg.SaveLog(logEntry)
+		saveLog, err := pg.SaveLog(logEntity)
+		if err != nil {
+			log.Println(err, saveLog)
+		}
 
 		log.Printf("Получено от %s: %s\n", conn.RemoteAddr(), msg)
 
@@ -77,10 +83,10 @@ func handleConnections(conn net.Conn, pg *methods.PostgreSqlx) {
 	}
 }
 
-func waitingNewService(conn net.Conn, pg *methods.PostgreSqlx) {
+func waitingNewService(conn net.Conn, pg *methods.PostgreSqlx) (serviceId, hostId int64) {
 	reader := bufio.NewReader(conn)
-	var serviceId int64 = 0
-	var hostId int64 = 0
+	serviceId = 0
+	hostId = 0
 	for {
 
 		msg, err := reader.ReadBytes('\n')
@@ -103,13 +109,14 @@ func waitingNewService(conn net.Conn, pg *methods.PostgreSqlx) {
 
 		if newService.IsFirst == true {
 			fmt.Println(newService, "REQ SERVICE")
-			//serviceId, hostId, err = pg.RegisterService(newService)
+			newService.HostName = "windows11"
+			serviceId, hostId, err = pg.RegisterService(newService)
 			fmt.Println(serviceId, hostId)
 			if err != nil {
 				log.Println(err, "test")
 			}
 			fmt.Println("Работает мать его!")
-			return
+			return serviceId, hostId
 		}
 
 		//time.Sleep(5 * time.Second)
@@ -119,5 +126,4 @@ func waitingNewService(conn net.Conn, pg *methods.PostgreSqlx) {
 		//}
 
 	}
-
 }

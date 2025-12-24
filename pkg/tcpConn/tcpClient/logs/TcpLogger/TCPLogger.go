@@ -114,16 +114,24 @@ func (l *TCPJSONLogger) reconnectWithBackoff() {
 }
 
 // Методы логирования
-func (l *TCPJSONLogger) Info(msg string, metadata ...map[string]interface{}) {
+func (l *TCPJSONLogger) Debug(msg string, metadata ...map[string]interface{}) {
 	l.log(1, msg, metadata...)
 }
 
-func (l *TCPJSONLogger) Error(msg string, metadata ...map[string]interface{}) {
+func (l *TCPJSONLogger) Info(msg string, metadata ...map[string]interface{}) {
 	l.log(2, msg, metadata...)
 }
 
-func (l *TCPJSONLogger) Debug(msg string, metadata ...map[string]interface{}) {
+func (l *TCPJSONLogger) Warn(msg string, metadata ...map[string]interface{}) {
 	l.log(3, msg, metadata...)
+}
+
+func (l *TCPJSONLogger) Error(msg string, metadata ...map[string]interface{}) {
+	l.log(4, msg, metadata...)
+}
+
+func (l *TCPJSONLogger) Fatal(msg string, metadata ...map[string]interface{}) {
+	l.log(5, msg, metadata...)
 }
 
 func (l *TCPJSONLogger) log(levelID int64, msg string, metadata ...map[string]interface{}) {
