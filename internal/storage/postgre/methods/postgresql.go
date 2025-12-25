@@ -180,6 +180,7 @@ func (pg *PostgreSqlx) GetRecentLogsByInterval(filterType string, filterValue in
 	return logs, nil
 }
 
+// Получение хостов, на которых были ошибки за последний промежуток времени(в часах)
 func (pg *PostgreSqlx) GetHostErrorStats(hours int) ([]entity.HostErrorStats, error) {
 	intervalStr := fmt.Sprintf("'%d hours'", hours)
 	query := `SELECT 
@@ -187,19 +188,17 @@ func (pg *PostgreSqlx) GetHostErrorStats(hours int) ([]entity.HostErrorStats, er
     h.name as host_name,
     COUNT(CASE WHEN ll.name = 'ERROR' THEN 1 END) as error_count,
     COUNT(CASE WHEN ll.name = 'FATAL' THEN 1 END) as fatal_count,
-    COUNT(CASE WHEN ll.name = 'DEBUG' THEN 1 END) as debug_count,
     MAX(l.timestamp) as last_error
 	FROM logs l
 	JOIN hosts h ON l.host_id = h.id
 	JOIN log_levels ll ON l.level_id = ll.id
 	WHERE l.timestamp >= NOW() - $1::interval
-	AND ll.name IN ('ERROR', 'FATAL', 'DEBUG')
+	AND ll.name IN ('ERROR', 'FATAL')
 	GROUP BY h.id, h.name
 	HAVING COUNT(*) > 0
 	ORDER BY 
     COUNT(CASE WHEN ll.name = 'ERROR' THEN 1 END) +
-    COUNT(CASE WHEN ll.name = 'FATAL' THEN 1 END) +
-    COUNT(CASE WHEN ll.name = 'DEBUG' THEN 1 END)
+    COUNT(CASE WHEN ll.name = 'FATAL' THEN 1 END)
 DESC;`
 
 	var stats []entity.HostErrorStats
@@ -208,4 +207,67 @@ DESC;`
 		return nil, err
 	}
 	return stats, err
+}
+
+// Получение сервисов закреплённых за хостом по заданному фильтру(ip, host_id, host_name)
+func (pg *PostgreSqlx) GetServicesByHost(filterType string, filterValue interface{}) ([]entity.Service, error) {
+	var whereClause string
+	var queryParam interface{}
+
+	switch filterType {
+	case "ip":
+		whereClause = "h.ip = $1"
+	case "host_id":
+		whereClause = "h.id = $1"
+	case "host_name":
+		whereClause = "h.name = $1"
+	default:
+		return nil, fmt.Errorf("invalid filter type: %s", filterType)
+	}
+	queryParam = filterValue
+
+	query := fmt.Sprintf(`SELECT DISTINCT
+	s.id as id,
+	s.name as name,
+	s.description as description,
+	s.creation_at as creation_at,
+	s.is_active as is_active,
+	
+	e.name as env_name
+	
+	FROM logs l
+	JOIN services s ON l.service_id = s.id
+	JOIN environments e ON l.environment_id = e.id
+	JOIN hosts h ON l.host_id = h.id
+	WHERE %s
+	ORDER BY s.creation_at DESC
+	`, whereClause)
+
+	var services []entity.Service
+	err := pg.db.Select(&services, query, queryParam)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get services: %w", err)
+	}
+
+	return services, nil
+}
+
+// Добавление нового уровня логирования
+func (pg *PostgreSqlx) PostNewLogLevel(levelName string, severity int, description string) error {
+	query := `INSERT INTO log_levels (name, severity, description) VALUES ($1, $2, $3);`
+	_, err := pg.db.Exec(query, levelName, severity, description)
+	if err != nil {
+		return fmt.Errorf("failed to insert log level: %w", err)
+	}
+	return nil
+}
+
+// Добавление нового окружения
+func (pg *PostgreSqlx) PostNewEnvironment(envName string, description string) error {
+	query := `INSERT INTO environments (name, description) VALUES ($1, $2);`
+	_, err := pg.db.Exec(query, envName, description)
+	if err != nil {
+		return fmt.Errorf("failed to insert environment: %w", err)
+	}
+	return nil
 }

@@ -11,12 +11,12 @@ type Service struct {
 	HostName  string    `db:"host_name" json:"host_name"`
 	HostID    int64     `db:"host_id" json:"host_id,omitempty"`
 	HostIP    string    `db:"host_ip" json:"host_ip"`
-	Desc      *string   `db:"desc" json:"description,omitempty"` // nullable
+	Desc      *string   `db:"description" json:"description,omitempty"` // nullable
 	TeamOwner *string   `db:"team_owner" json:"team_owner,omitempty"`
 	CreatedAt time.Time `db:"creation_at" json:"created_at"`
 	IsActive  bool      `db:"is_active" json:"is_active"`
-
-	IsFirst bool `json:"is_first"`
+	EnvName   string    `db:"env_name" json:"env_name"`
+	IsFirst   bool      `json:"is_first"`
 }
 
 type Host struct {

@@ -11,9 +11,8 @@ import (
 )
 
 func Run() {
-	//http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	//	fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
-	//})
+
+	//Connection db
 	connStr := "host=localhost port=5432 user=mihail password=secretPass123 dbname=logsdb sslmode=disable"
 	storage, err := methods.NewPG(connStr)
 	fmt.Println(storage)
@@ -21,11 +20,13 @@ func Run() {
 	if err != nil {
 		fmt.Printf("Error to connect postgres %w", err)
 	}
-	//Set logger
 
+	//Set custom logger
 	logger := logs.LogInit()
 
 	var wg sync.WaitGroup
+
+	// HTTP-server start listening
 	wg.Add(1)
 	go func() {
 		http_server.StartHttpServer(storage)
@@ -36,6 +37,7 @@ func Run() {
 		}
 	}()
 
+	// TCP-server start listening
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
