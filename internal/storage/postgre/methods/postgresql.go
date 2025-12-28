@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/Kitores/ObservationSystem/internal/models/entity"
+	"github.com/Kitores/ObservationSystem/internal/transport/http-server/authorization/jwtTypes"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 	"log"
@@ -24,7 +25,7 @@ func NewPG(connString string) (*PostgreSqlx, error) {
 	pgOnce.Do(func() {
 		db, err := sqlx.Connect("pgx", connString)
 		if err != nil {
-			fmt.Errorf("unable to create conection pool: %w", err)
+			fmt.Errorf("unable to create conection: %w", err)
 		}
 		pgInstance = &PostgreSqlx{db: db}
 		if pgInstance.db == nil {
@@ -41,7 +42,8 @@ func (pg *PostgreSqlx) Close()      {}
 // Для TCP сервера
 func (pg *PostgreSqlx) SaveLog(logEntity entity.LogEntity) (sql.Result, error) {
 	query := `INSERT INTO logs (service_id, environment_id, host_id, level_id, 
-             message, timestamp, logger_name, received_at) VALUES (:service_id, :environment_id, :host_id, :level_id, :message, :timestamp, :logger_name, :received_at)`
+             message, timestamp, logger_name, received_at) VALUES (:service_id, :environment_id, :host_id, :level_id,
+                                                                   :message, :timestamp, :logger_name, :received_at)`
 	result, err := pg.db.NamedExec(query, map[string]interface{}{
 		"service_id":     logEntity.ServiceID,
 		"environment_id": logEntity.EnvironmentID,
@@ -73,8 +75,8 @@ func (pg *PostgreSqlx) RegisterService(newService entity.Service) (int64, int64,
 		newService.Name,
 		newService.HostName,
 		newService.HostIP,
-		*newService.TeamOwner,
-		*newService.Desc, // description
+		newService.TeamOwner,
+		newService.Desc, // description
 	)
 
 	if err != nil {
@@ -170,7 +172,6 @@ func (pg *PostgreSqlx) GetRecentLogsByInterval(filterType string, filterValue in
         LIMIT 100
     `, whereClause)
 
-	// можно менять кароче
 	var logs []entity.LogEntity
 	err := pg.db.Select(&logs, query, strconv.Itoa(value), unit, queryParam)
 	if err != nil {
@@ -270,4 +271,25 @@ func (pg *PostgreSqlx) PostNewEnvironment(envName string, description string) er
 		return fmt.Errorf("failed to insert environment: %w", err)
 	}
 	return nil
+}
+
+func (pg *PostgreSqlx) NewUser(username, hashedPassword string) (int, error) {
+	var userID int
+	fmt.Println(username, hashedPassword)
+	err := pg.db.QueryRow(
+		"INSERT INTO users (name, password) VALUES ($1, $2) RETURNING id",
+		username, hashedPassword).Scan(&userID)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return userID, err
+}
+
+func (pg *PostgreSqlx) UserExists(username string) (jwtTypes.User, error) {
+	var user jwtTypes.User
+	err := pg.db.Get(&user, "SELECT id, name, password FROM users WHERE name = $1", username)
+	if err != nil {
+		return user, fmt.Errorf("failed to select user: %w", err)
+	}
+	return user, nil
 }

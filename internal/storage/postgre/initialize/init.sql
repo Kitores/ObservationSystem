@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS logs (
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(20) NOT NULL UNIQUE,
-    password VARCHAR(20) NOT NULL
+    password VARCHAR(60) NOT NULL
 );
 -- -- Таблица исключений (соответствует entity.LogException)
 -- CREATE TABLE IF NOT EXISTS log_exceptions (

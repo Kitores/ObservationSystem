@@ -11,8 +11,8 @@ type Service struct {
 	HostName  string    `db:"host_name" json:"host_name"`
 	HostID    int64     `db:"host_id" json:"host_id,omitempty"`
 	HostIP    string    `db:"host_ip" json:"host_ip"`
-	Desc      *string   `db:"description" json:"description,omitempty"` // nullable
-	TeamOwner *string   `db:"team_owner" json:"team_owner,omitempty"`
+	Desc      string    `db:"description" json:"description,omitempty"` // nullable
+	TeamOwner string    `db:"team_owner" json:"team_owner,omitempty"`
 	CreatedAt time.Time `db:"creation_at" json:"created_at"`
 	IsActive  bool      `db:"is_active" json:"is_active"`
 	EnvName   string    `db:"env_name" json:"env_name"`
@@ -20,12 +20,9 @@ type Service struct {
 }
 
 type Host struct {
-	ID   int64   `db:"id" json:"id,omitempty"`
-	Name string  `db:"name" json:"name"`
-	IP   *string `db:"ip" json:"ip,omitempty"` // nullable
-	//Region    *string   `db:"region" json:"region,omitempty"`
-	//Zone      *string   `db:"zone" json:"zone,omitempty"`
-	//Metadata  *string   `db:"meta_data" json:"metadata,omitempty"` // db: meta_data, json: metadata
+	ID        int64     `db:"id" json:"id,omitempty"`
+	Name      string    `db:"name" json:"name"`
+	IP        *string   `db:"ip" json:"ip,omitempty"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
@@ -36,42 +33,33 @@ type Environment struct {
 }
 
 type LogLevel struct {
-	ID            int64   `db:"id" json:"id,omitempty"`
-	Name          string  `db:"name" json:"name"`
-	Severity      int     `db:"severity" json:"severity"`
-	ColorCode     *string `db:"color_code" json:"color_code,omitempty"`
-	Description   *string `db:"description" json:"description,omitempty"`
-	RetentionDays *int    `db:"retention_days" json:"retention_days,omitempty"`
+	ID            int64  `db:"id" json:"id,omitempty"`
+	Name          string `db:"name" json:"name"`
+	Severity      int    `db:"severity" json:"severity"`
+	ColorCode     string `db:"color_code" json:"color_code,omitempty"`
+	Description   string `db:"description" json:"description,omitempty"`
+	RetentionDays int    `db:"retention_days" json:"retention_days,omitempty"`
 }
 
 type LogEntity struct {
-	ID            int64  `db:"id" json:"id,omitempty"`
-	ServiceID     int64  `db:"service_id" json:"service_id"`
-	EnvironmentID int64  `db:"environment_id" json:"environment_id"`
-	HostID        int64  `db:"host_id" json:"host_id"`
-	HostIP        string `db:"host_ip" json:"host_ip"` // Only for json
+	ID            int64 `db:"id" json:"id,omitempty"`
+	ServiceID     int64 `db:"service_id" json:"service_id"`
+	EnvironmentID int64 `db:"environment_id" json:"environment_id"`
+	HostID        int64 `db:"host_id" json:"host_id"`
+	LevelID       int64 `db:"level_id" json:"level_id"`
 
-	EnvName       string `db:"environment_name" json:"env_name"`
-	LevelName     string `db:"level_name" json:"level_name"`
-	LevelSeverity int    `db:"level_severity" json:"level_severity"`
-
-	LevelID int64 `db:"level_id" json:"level_id"`
-
-	Message    string    `db:"message" json:"message"`
-	Timestamp  time.Time `db:"timestamp" json:"timestamp"`
-	LoggerName *string   `db:"logger_name" json:"logger_name,omitempty"` // nullable
-
-	ReceivedAt time.Time `db:"received_at" json:"received_at,omitempty"`
-	Version    int       `db:"version" json:"version,omitempty"`
+	HostIP        string    `db:"host_ip" json:"host_ip"`
+	EnvName       string    `db:"environment_name" json:"env_name"`
+	LevelName     string    `db:"level_name" json:"level_name"`
+	LevelSeverity int       `db:"level_severity" json:"level_severity"`
+	Message       string    `db:"message" json:"message"`
+	Timestamp     time.Time `db:"timestamp" json:"timestamp"`
+	LoggerName    string    `db:"logger_name" json:"logger_name,omitempty"` // nullable
+	ReceivedAt    time.Time `db:"received_at" json:"received_at,omitempty"`
+	Version       int       `db:"version" json:"version,omitempty"`
 
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	Error    string                 `json:"error,omitempty"`
-
-	// Для JOIN запросов (опционально, не маппятся напрямую из БД)
-	//ServiceName     *string `db:"-" json:"service_name,omitempty"`
-	//EnvironmentName *string `db:"-" json:"environment_name,omitempty"`
-	//HostName        *string `db:"-" json:"host_name,omitempty"`
-	//LevelName       *string `db:"-" json:"level_name,omitempty"`
 }
 
 //type LogException struct {

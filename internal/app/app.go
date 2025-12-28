@@ -15,10 +15,9 @@ func Run() {
 	//Connection db
 	connStr := "host=localhost port=5432 user=mihail password=secretPass123 dbname=logsdb sslmode=disable"
 	storage, err := methods.NewPG(connStr)
-	fmt.Println(storage)
 
 	if err != nil {
-		fmt.Printf("Error to connect postgres %w", err)
+		fmt.Printf("Error to connect postgresql %w", err)
 	}
 
 	//Set custom logger

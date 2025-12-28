@@ -20,7 +20,7 @@ type TCPJSONLogger struct {
 	buffer        chan []byte
 }
 
-func NewTCPJSONLogger(address string, serviceID, environmentID int64, hostIP string, bufferSize int) (*TCPJSONLogger, error) {
+func NewTCPJSONLogger(address, name, teamOwner, hostIP, description string, serviceID, environmentID int64, bufferSize int) (*TCPJSONLogger, error) {
 	logger := &TCPJSONLogger{
 		address:       address,
 		serviceID:     serviceID,
@@ -30,18 +30,17 @@ func NewTCPJSONLogger(address string, serviceID, environmentID int64, hostIP str
 		buffer:        make(chan []byte, bufferSize),
 	}
 
-	// Подключаемся к серверу
 	if err := logger.connect(); err != nil {
 		return nil, err
 	}
 
-	teamowner := "TestTeam"
-	description := "Service for manage rabbitmq"
+	//teamowner := "TestTeam"
+	//description := "Service for manage rabbitmq"
 	service := entity.Service{
-		Name:      "message-broker",
-		HostIP:    "localhost",
-		TeamOwner: &teamowner,
-		Desc:      &description,
+		Name:      name,
+		HostIP:    hostIP,
+		TeamOwner: teamOwner,
+		Desc:      description,
 		IsFirst:   true,
 	}
 
@@ -49,10 +48,8 @@ func NewTCPJSONLogger(address string, serviceID, environmentID int64, hostIP str
 	if err != nil {
 		return nil, err
 	}
-	//jsonService = append(jsonService, '#')
 	logger.send(jsonService)
 
-	// Запускаем worker для отправки
 	go logger.worker()
 
 	return logger, nil
@@ -78,7 +75,6 @@ func (l *TCPJSONLogger) worker() {
 			if l.reconnect {
 				l.reconnectWithBackoff()
 			}
-			// Можно сохранить в локальный файл или кэш
 			fmt.Printf("Failed to send log: %v\n", err)
 		}
 	}
@@ -143,7 +139,7 @@ func (l *TCPJSONLogger) log(levelID int64, msg string, metadata ...map[string]in
 		ServiceID:     l.serviceID,
 		EnvironmentID: l.environmentID,
 		HostIP:        l.hostIP,
-		LoggerName:    &loggerName,
+		LoggerName:    loggerName,
 	}
 
 	// Добавляем метаданные

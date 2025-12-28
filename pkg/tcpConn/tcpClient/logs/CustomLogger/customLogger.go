@@ -55,7 +55,7 @@ func (l *JSONLogger) log(levelID int64, msg string, err error, metadata ...map[s
 		EnvironmentID: l.environment,
 		HostIP:        l.hostIP,
 		LevelID:       levelID,
-		LoggerName:    &loggerName,
+		LoggerName:    loggerName,
 	}
 
 	if err != nil {
