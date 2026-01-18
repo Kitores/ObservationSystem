@@ -2,7 +2,7 @@ package http_server
 
 import (
 	"errors"
-	"fmt"
+	"github.com/Kitores/ObservationSystem/internal/config"
 	"github.com/Kitores/ObservationSystem/internal/storage/postgre/methods"
 	"github.com/Kitores/ObservationSystem/internal/transport/http-server/handlers/environments/postEnvironment"
 	"github.com/Kitores/ObservationSystem/internal/transport/http-server/handlers/hosts/getHosts"
@@ -11,12 +11,10 @@ import (
 	"github.com/Kitores/ObservationSystem/internal/transport/http-server/handlers/logs/postLogLevel"
 	"github.com/Kitores/ObservationSystem/internal/transport/http-server/handlers/registration"
 	"github.com/Kitores/ObservationSystem/internal/transport/http-server/handlers/services/getServices"
-	"github.com/joho/godotenv"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"log/slog"
 	"net/http"
-	"os"
 )
 
 type JWTClaims struct {
@@ -24,20 +22,14 @@ type JWTClaims struct {
 	Name   string `json:"name"`
 }
 
-func StartHttpServer(pg *methods.PostgreSqlx) {
+func StartHttpServer(cfg *config.Config, pg *methods.PostgreSqlx) {
 
-	err := godotenv.Load("token.env")
-	if err != nil {
-		fmt.Printf("Error loading .env file: %v\n", err)
-		os.Exit(1)
-	}
-	jwtSecret := os.Getenv("JWT_TOKEN")
 	e := echo.New()
 
-	e.POST("/login", login.New(pg, jwtSecret))
+	e.POST("/login", login.New(pg, cfg.JWTToken))
 	e.POST("/register", registration.New(pg))
 
-	jwtSecretBytes := []byte(jwtSecret)
+	jwtSecretBytes := []byte(cfg.JWTToken)
 
 	jwtConfig := echojwt.Config{
 		SigningKey: jwtSecretBytes,

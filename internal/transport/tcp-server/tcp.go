@@ -12,6 +12,16 @@ import (
 	"time"
 )
 
+type firstConn struct {
+	address     string // адрес лог-сервера
+	name        string
+	teamOwner   string
+	ip          string
+	description string
+
+	bufferSize int // размер буфера
+}
+
 func StartTCPlogConsumer(network, address string, storage *methods.PostgreSqlx) (conn net.Conn) {
 
 	//conn, err := net.Dial(network, address)
@@ -109,13 +119,13 @@ func waitingNewService(conn net.Conn, pg *methods.PostgreSqlx) (serviceId, hostI
 
 		if newService.IsFirst == true {
 			fmt.Println(newService, "REQ SERVICE")
-			newService.HostName = "windows11"
+			newService.HostName = "OS + serviceName" // Нужно добавить сущность OS
 			serviceId, hostId, err = pg.RegisterService(newService)
 			fmt.Println(serviceId, hostId)
 			if err != nil {
-				log.Println(err, "test")
+				log.Println(err)
 			}
-			fmt.Println("Работает мать его!")
+
 			return serviceId, hostId
 		}
 

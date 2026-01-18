@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/Kitores/ObservationSystem/internal/config"
 	"github.com/Kitores/ObservationSystem/internal/logs"
 	"github.com/Kitores/ObservationSystem/internal/storage/postgre/methods"
 	http_server "github.com/Kitores/ObservationSystem/internal/transport/http-server"
@@ -12,8 +13,11 @@ import (
 
 func Run() {
 
+	//Getting Config
+	cfg, err := config.InitConfig()
+
 	//Connection db
-	connStr := "host=localhost port=5432 user=mihail password=secretPass123 dbname=logsdb sslmode=disable"
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", cfg.PostgresHost, cfg.PostgresPort, cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresDB, cfg.PostgresSSLMode)
 	storage, err := methods.NewPG(connStr)
 
 	if err != nil {
@@ -28,7 +32,7 @@ func Run() {
 	// HTTP-server start listening
 	wg.Add(1)
 	go func() {
-		http_server.StartHttpServer(storage)
+		http_server.StartHttpServer(cfg, storage)
 
 		logger.Info("HTTP Server starting on :8080")
 		if err := http.ListenAndServe(":8080", nil); err != nil {
